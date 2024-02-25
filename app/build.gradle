@@ -28,13 +28,18 @@ android {
         exclude 'META-INF/DEPENDENCIES'
     }
 
-    buildTypes {        
+    buildTypes {
         release {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             minifyEnabled true
-            ndk {
-                abiFilters 'armeabi-v7a'                
-            }
+        }
+    }
+
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'armeabi-v7a', 'arm64-v8a'
         }
     }
 
@@ -47,7 +52,7 @@ android {
         checkReleaseBuilds false
         abortOnError false
     }
-    
+
     buildFeatures {
         dataBinding = true
     }
@@ -108,7 +113,7 @@ dependencies {
     implementation "com.aliyun.sdk.android:AliyunPlayer:5.5.1.0-full"
     implementation 'com.alivc.conan:AlivcConan:0.9.5'
     implementation 'xyz.doikki.android.dkplayer:dkplayer-ui:3.3.7'
-    implementation 'xyz.doikki.android.dkplayer:videocache:3.3.7'    
+    implementation 'xyz.doikki.android.dkplayer:videocache:3.3.7'
 
     implementation('org.xwalk:xwalk_shared_library:23.53.589.4') {
         exclude group: 'com.android.support'
