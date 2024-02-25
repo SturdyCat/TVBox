@@ -31,7 +31,7 @@ android {
                 def abi = output.getFilter(com.android.build.OutputFile.ABI)
                 if (abi == null) abi = "all"
                 def version = variant.versionName
-                outputFileName = "TVBox_${buildType}_${abi}_v${version}.apk"
+                outputFileName = "TVBox_${abi}_v${version}.apk"
             }
         }
     }
