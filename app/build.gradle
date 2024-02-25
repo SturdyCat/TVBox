@@ -27,11 +27,10 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             if (buildType.name == 'release') {
-                def buildType = variant.name
                 def abi = output.getFilter(com.android.build.OutputFile.ABI)
                 if (abi == null) abi = "all"
                 def version = variant.versionName
-                outputFileName = "TVBox_${abi}_v${version}.apk"
+                outputFileName = "TVBox_v${version}_${abi}.apk"
             }
         }
     }
