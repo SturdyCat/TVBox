@@ -109,8 +109,9 @@ jobs:
           rm -rf apk/
           mkdir -p apk/
           for file in `find ~ -name "TVBox*.apk" -print`; do
+            filename = 
+            md5sum "$file" > "apk/$(basename $file).md5"
             mv "$file" apk/
-            md5sum "apk/$file" > "apk/$file.md5"
           done
       - name: Release Note
         if: ${{ env.commit }}
