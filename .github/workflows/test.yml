@@ -109,7 +109,7 @@ jobs:
           rm -rf apk/
           mkdir -p apk/
           for file in `find ~ -name "TVBox*.apk" -print`; do
-            md5sum "$file" > "apk/$(basename $file).md5"
+            md5sum "$file" | awk '{ print $1 }' > "apk/$(basename $file).md5"
             mv "$file" apk/
           done
       - name: Release Note
@@ -140,5 +140,6 @@ jobs:
           allowUpdates: true
           removeArtifacts: true
           artifacts: |
-            TVBoxOSC/apk/*
+            TVBoxOSC/apk/*.apk
+            TVBoxOSC/apk/*.md5
             TVBoxOSC/source-${{ env.commitS }}.*
