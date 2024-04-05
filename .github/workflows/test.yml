@@ -110,6 +110,7 @@ jobs:
           mkdir -p apk/
           for file in `find ~ -name "TVBox*.apk" -print`; do
             mv "$file" apk/
+            md5sum "apk/$file" > "apk/$file.md5"
           done
       - name: Release Note
         if: ${{ env.commit }}
@@ -139,5 +140,5 @@ jobs:
           allowUpdates: true
           removeArtifacts: true
           artifacts: |
-            TVBoxOSC/apk/*.apk
+            TVBoxOSC/apk/*
             TVBoxOSC/source-${{ env.commitS }}.*
