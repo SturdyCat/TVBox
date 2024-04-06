@@ -25,7 +25,7 @@ jobs:
         include:
           - userName: SturdyCat
             repoName: TVBox
-            branchName: build-splits
+            branchName: main
     steps:
       - name: Checkout
         uses: actions/checkout@v4
