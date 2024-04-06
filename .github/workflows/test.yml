@@ -43,7 +43,7 @@ jobs:
       - name: Checkout Source Code
         if: ${{ env.commit }}
         run: |
-          git clone ${{ env.upStream }} TVBoxOSC
+          git clone --depth 1 ${{ env.upStream }} TVBoxOSC
           cd TVBoxOSC
           git checkout ${{ env.commit }}
           echo "tag=$(git log --date=format:'%Y%m%d-%H%M' --pretty=format:%cd ${{ env.commitS }} -1)" >> $GITHUB_ENV
@@ -109,7 +109,7 @@ jobs:
           rm -rf apk/
           mkdir -p apk/
           for file in `find ~ -name "TVBox*.apk" -print`; do
-            md5sum "$file" | awk '{ print $1 }' > "apk/$(basename $file).md5"
+            md5sum "$file" | cut -d ' ' -f 1 > "apk/$(basename $file).md5"
             mv "$file" apk/
           done
       - name: Release Note

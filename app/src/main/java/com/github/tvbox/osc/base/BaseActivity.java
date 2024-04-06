@@ -17,6 +17,7 @@ import android.view.WindowManager;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.PermissionChecker;
+
 import com.blankj.utilcode.util.ActivityUtils;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.callback.EmptyCallback;
@@ -40,16 +41,30 @@ import me.jessyan.autosize.AutoSizeCompat;
 import me.jessyan.autosize.internal.CustomAdapt;
 import xyz.doikki.videoplayer.util.CutoutUtil;
 
+
 /**
  * @author pj567
  * @date :2020/12/17
  * @description:
  */
 public abstract class BaseActivity extends AppCompatActivity implements CustomAdapt {
+    protected static BitmapDrawable globalWp = null;
+    private static float screenRatio = -100.0f;
     protected Context mContext;
     private LoadService mLoadService;
 
-    private static float screenRatio = -100.0f;
+    // takagen99 : Check for Gesture or 3-Buttons NavBar
+    // 0 : 3-Button NavBar
+    // 1 : 2-Button NavBar (Android P)
+    // 2 : Gesture full screen
+    public static int isEdgeToEdgeEnabled(Context context) {
+        Resources resources = context.getResources();
+        int resourceId = resources.getIdentifier("config_navBarInteractionMode", "integer", "android");
+        if (resourceId > 0) {
+            return resources.getInteger(resourceId);
+        }
+        return 0;
+    }
 
     // takagen99 : Fix for Locale change not persist on higher Android version
     @Override
@@ -58,6 +73,7 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         if (App.viewPump != null) {
             newBase = ViewPumpContextWrapper.wrap(base, App.viewPump);
         }
+
 
         if (Hawk.get(HawkConfig.HOME_LOCALE, 0) == 0) {
             super.attachBaseContext(LocaleHelper.onAttach(newBase, "zh"));
@@ -111,19 +127,6 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         super.onResume();
         hideSystemUI(true);
         changeWallpaper(false);
-    }
-
-    // takagen99 : Check for Gesture or 3-Buttons NavBar
-    // 0 : 3-Button NavBar
-    // 1 : 2-Button NavBar (Android P)
-    // 2 : Gesture full screen
-    public static int isEdgeToEdgeEnabled(Context context) {
-        Resources resources = context.getResources();
-        int resourceId = resources.getIdentifier("config_navBarInteractionMode", "integer", "android");
-        if (resourceId > 0) {
-            return resources.getInteger(resourceId);
-        }
-        return 0;
     }
 
     public void hideSysBar() {
@@ -245,7 +248,7 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
     }
 
     public void jumpActivity(Class<? extends BaseActivity> clazz, Bundle bundle) {
-    	if (DetailActivity.class.isAssignableFrom(clazz) && Hawk.get(HawkConfig.BACKGROUND_PLAY_TYPE, 0) == 2) {
+        if (DetailActivity.class.isAssignableFrom(clazz) && Hawk.get(HawkConfig.BACKGROUND_PLAY_TYPE, 0) == 2) {
             //1.重新打开singleTask的页面(关闭小窗) 2.关闭画中画，重进detail再开启画中画会闪退
             ActivityUtils.finishActivity(DetailActivity.class);
         }
@@ -308,8 +311,6 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         int themeColor = a.getColor(R.styleable.themeColor_color_theme, 0);
         return themeColor;
     }
-
-    protected static BitmapDrawable globalWp = null;
 
     public void changeWallpaper(boolean force) {
         if (!force && globalWp != null) {
