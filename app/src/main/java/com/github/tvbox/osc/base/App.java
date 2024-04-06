@@ -10,11 +10,12 @@ import com.github.tvbox.osc.callback.EmptyCallback;
 import com.github.tvbox.osc.callback.LoadingCallback;
 import com.github.tvbox.osc.data.AppDataManager;
 import com.github.tvbox.osc.server.ControlManager;
+import com.github.tvbox.osc.update.Update;
 import com.github.tvbox.osc.util.EpgUtil;
 import com.github.tvbox.osc.util.FileUtils;
 import com.github.tvbox.osc.util.HawkConfig;
-import com.github.tvbox.osc.util.LocaleHelper;
 import com.github.tvbox.osc.util.LOG;
+import com.github.tvbox.osc.util.LocaleHelper;
 import com.github.tvbox.osc.util.OkGoHelper;
 import com.github.tvbox.osc.util.PlayerHelper;
 import com.hjq.permissions.XXPermissions;
@@ -37,11 +38,28 @@ import me.jessyan.autosize.unit.Subunits;
  * @description:
  */
 public class App extends MultiDexApplication {
+    public static String burl;
+    public static ViewPump viewPump = null;
     private static App instance;
     private static P2PClass p;
-    public static String burl;
     private static String dashData;
-    public static ViewPump viewPump = null;
+
+
+    public static App getInstance() {
+        return instance;
+    }
+
+    public static P2PClass getp2p() {
+        try {
+            if (p == null) {
+                p = new P2PClass(FileUtils.getExternalCachePath());
+            }
+            return p;
+        } catch (Exception e) {
+            LOG.e(e.toString());
+            return null;
+        }
+    }
 
     @Override
     public void onCreate() {
@@ -93,20 +111,10 @@ public class App extends MultiDexApplication {
                                     .build()))
                     .build();
         }
-    }
 
-    public static P2PClass getp2p() {
-        try {
-            if (p == null) {
-                p = new P2PClass(FileUtils.getExternalCachePath());
-            }
-            return p;
-        } catch (Exception e) {
-            LOG.e(e.toString());
-            return null;
-        }
+        // Update
+        Update.init(this);
     }
-
 
     private void initParams() {
         // Hawk
@@ -142,10 +150,6 @@ public class App extends MultiDexApplication {
         }
     }
 
-    public static App getInstance() {
-        return instance;
-    }
-
     private void putDefault(String key, Object value) {
         if (!Hawk.contains(key)) {
             Hawk.put(key, value);
@@ -158,11 +162,11 @@ public class App extends MultiDexApplication {
         JsLoader.load();
     }
 
-    public void setDashData(String data) {
-        dashData = data;
-    }
-
     public String getDashData() {
         return dashData;
+    }
+
+    public void setDashData(String data) {
+        dashData = data;
     }
 }

@@ -13,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Created by fighting on 2017/4/7.
@@ -21,6 +22,35 @@ import java.io.InputStreamReader;
 public abstract class CallBackUtil<T> {
     static Handler mMainHandler = new Handler(Looper.getMainLooper());
 
+    public static final byte[] input2byte(InputStream inStream)
+            throws IOException {
+        ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
+        byte[] buff = new byte[100];
+        int rc = 0;
+        while ((rc = inStream.read(buff, 0, 100)) > 0) {
+            swapStream.write(buff, 0, rc);
+        }
+        byte[] in2b = swapStream.toByteArray();
+        return in2b;
+    }
+
+    private static String getRetString(InputStream is) {
+        String buf;
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+            is.close();
+            buf = sb.toString();
+            return buf;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     public void onProgress(float progress, long total) {
     }
@@ -40,7 +70,7 @@ public abstract class CallBackUtil<T> {
         mMainHandler.post(new Runnable() {
             @Override
             public void run() {
-                onFailure(response.code, errorMessage);
+                onFailure(response.code, errorMessage, response.exception);
             }
         });
     }
@@ -63,13 +93,12 @@ public abstract class CallBackUtil<T> {
     /**
      * 访问网络失败后被调用，执行在UI线程
      */
-    public abstract void onFailure(int code, String errorMessage);
+    public abstract void onFailure(int code, String errorMessage, final Exception e);
 
     /**
      * 访问网络成功后被调用，执行在UI线程
      */
     public abstract void onResponse(T response);
-
 
     public static abstract class CallBackDefault extends CallBackUtil<RealResponse> {
         @Override
@@ -95,8 +124,6 @@ public abstract class CallBackUtil<T> {
 
         public CallBackBitmap() {
         }
-
-        ;
 
         public CallBackBitmap(int targetWidth, int targetHeight) {
             mTargetWidth = targetWidth;
@@ -153,18 +180,6 @@ public abstract class CallBackUtil<T> {
             }
             return bitmap;
         }
-    }
-
-    public static final byte[] input2byte(InputStream inStream)
-            throws IOException {
-        ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
-        byte[] buff = new byte[100];
-        int rc = 0;
-        while ((rc = inStream.read(buff, 0, 100)) > 0) {
-            swapStream.write(buff, 0, rc);
-        }
-        byte[] in2b = swapStream.toByteArray();
-        return in2b;
     }
 
     /**
@@ -232,24 +247,6 @@ public abstract class CallBackUtil<T> {
                 }
 
             }
-            return null;
-        }
-    }
-
-    private static String getRetString(InputStream is) {
-        String buf;
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "utf-8"));
-            StringBuilder sb = new StringBuilder();
-            String line = "";
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
-            is.close();
-            buf = sb.toString();
-            return buf;
-
-        } catch (Exception e) {
             return null;
         }
     }
