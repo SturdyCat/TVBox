@@ -118,10 +118,10 @@ jobs:
           echo -e "Credit: [${{ github.repository_owner }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:" > apk/${{ github.repository_owner }}-Release.log
           git log --pretty=format:%B ${{ env.commitS }} -1 |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ github.repository_owner }}-Release.log
       - name: Upload App To Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ env.commit }}
         with:
-          name: ${{ github.repository }}
+          name: ${{ github.repository_owner }}-${{ github.repository_id }}
           path: |
             TVBoxOSC/apk/*
       - name: Whether Or Not to Publish
