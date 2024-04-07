@@ -1,4 +1,4 @@
-name: Test
+name: Build
 
 on:
   workflow_dispatch:
@@ -23,9 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - userName: SturdyCat
-            repoName: TVBox
-            branchName: main
+          - branchName: main
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,9 +31,9 @@ jobs:
           fetch-depth: 0
       - name: Check New Commit
         run: |
-          upStream=https://github.com/${{ matrix.userName }}/${{ matrix.repoName }}
+          upStream=https://github.com/${{ github.repository }}
           echo "upStream=$upStream" >> $GITHUB_ENV
-          commit=$(curl -sL $upStream/commits/${{ matrix.branchName }} |grep -o "/${{ matrix.userName }}/${{ matrix.repoName }}/commit/[a-z0-9]\+" |head -1 | cut -d\/ -f5)
+          commit=$(curl -sL $upStream/commits/${{ matrix.branchName }} |grep -o "/${{ github.repository }}/commit/[a-z0-9]\+" |head -1 | cut -d\/ -f5)
           if ! grep -q "$commit" README.md || [ "${{ inputs.rebuild }}" == "true" ]; then
             echo "commit=$commit" >> $GITHUB_ENV
             echo "commitS=${commit:0:7}" >> $GITHUB_ENV
@@ -117,13 +115,13 @@ jobs:
         working-directory: TVBoxOSC
         run: |
           export LESSCHARSET=utf-8
-          echo -e "Credit: [${{ matrix.userName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:" > apk/${{ matrix.userName }}-Release.log
-          git log --pretty=format:%B ${{ env.commitS }} -1 |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
+          echo -e "Credit: [${{ github.repository_owner }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:" > apk/${{ github.repository_owner }}-Release.log
+          git log --pretty=format:%B ${{ env.commitS }} -1 |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ github.repository_owner }}-Release.log
       - name: Upload App To Artifact
         uses: actions/upload-artifact@v3
         if: ${{ env.commit }}
         with:
-          name: ${{ matrix.userName }}-${{ matrix.repoName }}
+          name: ${{ github.repository }}
           path: |
             TVBoxOSC/apk/*
       - name: Whether Or Not to Publish
@@ -136,7 +134,7 @@ jobs:
         with:
           name: ${{ env.tag }}
           tag: ${{ env.tag }}
-          bodyFile: TVBoxOSC/apk/${{ matrix.userName }}-Release.log
+          bodyFile: TVBoxOSC/apk/${{ github.repository_owner }}-Release.log
           allowUpdates: true
           removeArtifacts: true
           artifacts: |
