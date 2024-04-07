@@ -93,10 +93,9 @@ jobs:
           rm -rf apk/
           mkdir -p apk/
           for file in `find ~ -name "TVBox*.apk" -print`; do
-            md5sum "$file" | cut -d ' ' -f 1 > "apk/$(basename $file).md5"
+            md5sum "$file" | awk '{ print $1 }' > "apk/$(basename $file).md5"
             mv "$file" apk/
           done
-          ls -lah apk/
       - name: Release Note
         if: ${{ env.commit }}
         working-directory: TVBoxOSC
