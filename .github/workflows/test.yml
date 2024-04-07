@@ -21,9 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - branchName: main
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,7 +30,7 @@ jobs:
         run: |
           upStream=https://github.com/${{ github.repository }}
           echo "upStream=$upStream" >> $GITHUB_ENV
-          commit=$(curl -sL $upStream/commits/${{ matrix.branchName }} |grep -o "/${{ github.repository }}/commit/[a-z0-9]\+" |head -1 | cut -d\/ -f5)
+          commit=$(curl -sL $upStream/commits/${{ github.ref_name }} |grep -o "/${{ github.repository }}/commit/[a-z0-9]\+" |head -1 | cut -d\/ -f5)
           if ! grep -q "$commit" README.md || [ "${{ inputs.rebuild }}" == "true" ]; then
             echo "commit=$commit" >> $GITHUB_ENV
             echo "commitS=${commit:0:7}" >> $GITHUB_ENV
