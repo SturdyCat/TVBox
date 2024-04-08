@@ -2,8 +2,12 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
-def static buildTime() {
-    return new Date().format("yyyyMMdd_HHmm", TimeZone.getTimeZone("GMT+08:00"))
+def static lastCommitDay() {
+    return "git log --date=format:%Y%m%d --pretty=format:%cd -1".execute().text.trim()
+}
+
+def getGitRepository() {
+    return "git config --get remote.origin.url".execute().text.trim().replaceAll("^.*com/", "").replace(".git", "")
 }
 
 android {
@@ -13,13 +17,23 @@ android {
         applicationId 'com.github.tvbox.osc.tk'
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0.".concat(buildTime())
+        versionCode lastCommitDay().toInteger()
+        versionName "1.0.".concat(lastCommitDay())
         multiDexEnabled true
         //设置room的Schema的位置
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
+
+        buildConfigField("String", "GITHUB_API_RELEASES_LATEST", "\"https://api.github.com/repos/${getGitRepository()}/releases/latest\"")
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (buildType.name == 'release') {
+                outputFileName = "TVBox_v${output.versionCode}.apk"
             }
         }
     }
@@ -29,6 +43,7 @@ android {
     }
 
     buildTypes {
+
         release {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             minifyEnabled true
@@ -39,8 +54,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     lintOptions {
@@ -111,8 +126,9 @@ dependencies {
     implementation "androidx.media3:media3-exoplayer-rtsp:1.1.1"
     implementation "androidx.media3:media3-datasource-rtmp:1.1.1"
     implementation 'androidx.media3:media3-common:1.1.1'
-    implementation "com.github.anilbeesetti.nextlib:nextlib-media3ext:0.5.0" // To add media3 software decoders and extensions
-    //implementation "com.github.anilbeesetti.nextlib:nextlib-mediainfo:0.5.0" // To get media info through ffmpeg
+    implementation "com.github.anilbeesetti.nextlib:nextlib-media3ext:0.5.0"
+    // To add media3 software decoders and extensions
+    //implementation "com.github.anilbeesetti.nextlib:nextlib-mediainfo:0.6.0" // To get media info through ffmpeg
 
 
     implementation "com.aliyun.sdk.android:AliyunPlayer:5.5.2.0-full"
@@ -141,4 +157,6 @@ dependencies {
             exclude group: 'xpp3', module: 'xpp3'
         }
     }
+
+    implementation 'com.github.xuexiangjys:XUpdate:2.1.5'
 }

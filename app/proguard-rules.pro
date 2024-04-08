@@ -122,23 +122,23 @@
     void *(**On*Event);
     void *(**On*Listener);
 }
-#xwalk
+# xwalk
 -keep class org.xwalk.core.** { *; }
 -keep class org.crosswalk.engine.** { *; }
 -keep class org.chromium.** { *; }
 -dontwarn android.view.**
 -dontwarn android.media.**
 -dontwarn org.chromium.**
-#okhttp
+# okhttp
 -dontwarn okhttp3.**
 -keep class okhttp3.**{*;}
-#okio
+# okio
 -dontwarn okio.**
 -keep class okio.**{*;}
-#loadsir
+# loadsir
 -dontwarn com.kingja.loadsir.**
 -keep class com.kingja.loadsir.** {*;}
-#gson
+# gson
 # Gson specific classes
 -dontwarn sun.misc.**
 #-keep class com.google.gson.stream.** { *; }
@@ -154,7 +154,7 @@
 -keepclassmembers,allowobfuscation class * {
   @com.google.gson.annotations.SerializedName <fields>;
 }
-#xstream
+# xstream
 -keep class com.thoughtworks.xstream.converters.extended.SubjectConverter { *; }
 -keep class com.thoughtworks.xstream.converters.extended.ThrowableConverter { *; }
 -keep class com.thoughtworks.xstream.converters.extended.StackTraceElementConverter { *; }
@@ -162,7 +162,7 @@
 -keep class com.thoughtworks.xstream.converters.extended.RegexPatternConverter { *; }
 -keep class com.thoughtworks.xstream.converters.extended.CharsetConverter { *; }
 -keep class com.thoughtworks.xstream.** { *; }
-#eventbus
+# eventbus
 -keepclassmembers class * {
     @org.greenrobot.eventbus.Subscribe <methods>;
 }
@@ -171,12 +171,12 @@
 -keepclassmembers class * extends org.greenrobot.eventbus.util.ThrowableFailureEvent {
     <init>(java.lang.Throwable);
 }
-#bugly
+# bugly
 -dontwarn com.tencent.bugly.**
 -keep public class com.tencent.bugly.**{*;}
 -keep class android.support.**{*;}
 
-#dkplayer
+# dkplayer
 -keep class com.dueeeke.videoplayer.** { *; }
 -dontwarn com.dueeeke.videoplayer.**
 
@@ -205,9 +205,9 @@
 # 实体类
 #-keep class com.github.tvbox.osc.bean.** { *; }
 -keep class com.github.tvbox.osc.ui.fragment.homes.**{*;}
-#CardView
+# CardView
 -keep class com.github.tvbox.osc.ui.tv.widget.card.**{*;}
-#ViewObj
+# ViewObj
 -keep class com.github.tvbox.osc.ui.tv.widget.ViewObj{
     <methods>;
 }
@@ -224,13 +224,17 @@
 -keep class com.google.gson.**{*;}
 # 某些类会反射调用zxing导致生成阿里云二维码报错
 -keep class com.google.zxing.** {*;}
-#阿里云播放器
+# 阿里云播放器
 -keep class com.alivc.**{*;}
 -keep class com.aliyun.**{*;}
 -keep class com.cicada.**{*;}
 -dontwarn com.alivc.**
 -dontwarn com.aliyun.**
 -dontwarn com.cicada.**
+
+# update
+-keep class com.xuexiang.xupdate.entity.** { *; }
+-keep class com.github.tvbox.osc.update.** { *; }
 
 # from app -> build -> outputs -> mapping -> your_app_name -> missing_rules.txt
 # Please add these rules to your existing keep rules in order to suppress warnings.
