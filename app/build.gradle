@@ -31,14 +31,6 @@ android {
         buildConfigField("String", "GITHUB_API_RELEASES_LATEST", "\"https://api.github.com/repos/${getGitRepository()}/releases/latest\"")
     }
 
-    applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            if (buildType.name == 'release') {
-                outputFileName = "TVBox_v${output.versionCode}.apk"
-            }
-        }
-    }
-
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
     }
@@ -51,7 +43,7 @@ android {
 
         }
     }
-    flavorDimensions +=[ "abi","brand" ]
+    flavorDimensions +=[ "abi" ]
     productFlavors {
         armeabi {
             dimension = "abi"
@@ -59,29 +51,30 @@ android {
                 abiFilters 'armeabi-v7a'
             }
         }
-        arm64 {
-            dimension = "abi"
-            ndk {
-                abiFilters 'arm64-v8a'
-            }
-        }
+        // arm64 {
+        //     dimension = "abi"
+        //     ndk {
+        //         abiFilters 'arm64-v8a'
+        //     }
+        // }
 
-        generic  {
-            //通用版本
-            dimension = "brand"
-        }
+        // generic  {
+        //     //通用版本
+        //     dimension = "brand"
+        // }
 
-        hisense {
-            //海信的
-            applicationId 'com.github.hisense.osc.tk'
-            dimension = "brand"
-        }
+        // hisense {
+        //     //海信的
+        //     applicationId 'com.github.hisense.osc.tk'
+        //     dimension = "brand"
+        // }
     }
     applicationVariants.configureEach { variant ->
         variant.outputs.configureEach { output ->
-            def flavorNames = variant.productFlavors.collect { it.name }.join('-')
+            // def flavorNames = variant.productFlavors.collect { it.name }.join('-')
             // 构建自定义文件名
-            def fileName = "TVBox_${variant.buildType.name}-${flavorNames}.apk"
+            // def fileName = "TVBox_${variant.buildType.name}-${flavorNames}.apk"
+            def fileName = "TVBox_v${output.versionCode}.apk"
             outputFileName = fileName
         }
     }
