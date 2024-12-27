@@ -1,7 +1,10 @@
 package com.github.tvbox.osc.base;
 
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 
+import androidx.core.os.HandlerCompat;
 import androidx.multidex.MultiDexApplication;
 
 import com.github.catvod.crawler.JarLoader;
@@ -25,8 +28,11 @@ import com.kingja.loadsir.core.LoadSir;
 import com.orhanobut.hawk.Hawk;
 import com.p2p.P2PClass;
 import com.whl.quickjs.android.QuickJSLoader;
+import com.yanzhenjie.andserver.AndServer;
+import com.yanzhenjie.andserver.Server;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
@@ -40,11 +46,13 @@ import me.jessyan.autosize.unit.Subunits;
  * @description:
  */
 public class App extends MultiDexApplication {
-    public static String burl;
-    public static ViewPump viewPump = null;
     private static App instance;
     private static P2PClass p;
+    public static String burl;
     private static String dashData;
+    public static ViewPump viewPump = null;
+    private static Server server = null;
+    private final Handler handler;
 
 
     public static App getInstance() {
@@ -63,11 +71,14 @@ public class App extends MultiDexApplication {
         }
     }
 
+    public App() {
+        instance = this;
+        handler = HandlerCompat.createAsync(Looper.getMainLooper());
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        instance = this;
         SubtitleHelper.initSubtitleColor(this);
         initParams();
         // takagen99 : Initialize Locale
@@ -172,5 +183,39 @@ public class App extends MultiDexApplication {
 
     public void setDashData(String data) {
         dashData = data;
+    }
+
+    public static void startWebserver() {
+        if (server != null) return;
+        server = AndServer
+                .webServer(instance)
+                .port(12345)
+                .timeout(60, TimeUnit.SECONDS)
+                .listener(new Server.ServerListener() {
+                    @Override
+                    public void onStarted() {
+
+                    }
+
+                    @Override
+                    public void onStopped() {
+
+                    }
+
+                    @Override
+                    public void onException(Exception e) {
+
+                    }
+                }).build();
+        server.startup();
+    }
+
+    public static void post(Runnable runnable) {
+        getInstance().handler.post(runnable);
+    }
+
+    public static void post(Runnable runnable, long delayMillis) {
+        getInstance().handler.removeCallbacks(runnable);
+        if (delayMillis >= 0) getInstance().handler.postDelayed(runnable, delayMillis);
     }
 }
