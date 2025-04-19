@@ -42,13 +42,24 @@ android {
 
         }
     }
-    flavorDimensions +=[ "abi" ]
+    flavorDimensions +=[ "abi" , "mode"]
     productFlavors {
         armeabi {
             dimension = "abi"
             ndk {
                 abiFilters 'armeabi-v7a'
             }
+        }
+        normal {
+            dimension = "mode"
+            minSdkVersion 21
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        python {
+            dimension = "mode"
+            minSdkVersion 21
+            // Python 版本需要额外的 Proguard 规则
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-python.pro'
         }
     }
     applicationVariants.configureEach { variant ->
