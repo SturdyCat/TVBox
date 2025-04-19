@@ -45,7 +45,7 @@ jobs:
         if: ${{ env.commit }}
         working-directory: ${{ matrix.projectName }}
         run: |
-          echo '修改VersionName'
+          echo '修改 VersionName'
           sed -i "/android:text=/s#=\"#=\"${{ env.tag }}\\\\n\\\\n#" app/src/main/res/layout/dialog_about.xml
           echo 'crosswalk源，防挂'
           if grep -q 'crosswalk' build.gradle; then
@@ -53,6 +53,29 @@ jobs:
           else
             sed -i "/jitpack.io/a\        maven { url 'https://o0halflife0o.github.io/crosswalk/releases/crosswalk/android/maven2' }" build.gradle
           fi
+      
+      - name: Setup Python
+        if: ${{ env.commit }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+      - name: Install Python dependencies
+        if: ${{ env.commit }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install lxml ujson pyquery requests jsonpath cachetools pycryptodome beautifulsoup4
+      - name: Modify pyramid——build.gradle
+        if: ${{ env.commit }}
+        working-directory: ${{ matrix.projectName }}
+        run: |
+          # 替换Windows路径为系统Python路径
+          # sed -i "s|buildPython(\"D:/Programs/Python/Python38/python.exe\")|buildPython(\"/usr/bin/python3\")|g" pyramid/build.gradle
+          sed -i '/buildPython("D:\/Programs\/Python\/Python38\/python.exe")/d' pyramid/build.gradle
+      - name: Setup Python local.properties
+        if: ${{ env.commit }}
+        working-directory: ${{ matrix.projectName }}
+        run: echo "" > local.properties 
+      
       - name: Release Apk Sign
         if: ${{ env.commit }}
         working-directory: ${{ matrix.projectName }}

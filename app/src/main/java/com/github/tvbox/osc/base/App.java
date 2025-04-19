@@ -160,6 +160,10 @@ public class App extends MultiDexApplication {
         }
     }
 
+    public static App getInstance() {
+        return instance;
+    }
+
     private void putDefault(String key, Object value) {
         if (!Hawk.contains(key)) {
             Hawk.put(key, value);
@@ -170,6 +174,10 @@ public class App extends MultiDexApplication {
     public void onTerminate() {
         super.onTerminate();
         JsLoader.load();
+    }
+
+    public void setDashData(String data) {
+        dashData = data;
     }
 
     public String getDashData() {

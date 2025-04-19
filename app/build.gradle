@@ -16,6 +16,7 @@ android {
 
     defaultConfig {
         applicationId 'com.github.tvbox.osc.tk'
+        minSdkVersion 21
         targetSdkVersion 28
         versionCode lastCommitDay().toInteger()
         versionName "1.0.".concat(lastCommitDay())
@@ -103,7 +104,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
     implementation 'com.google.android.material:material:1.12.0'
     implementation project(path: ':quickjs')
-    pythonImplementation project(":pyramid")
+    implementation project(path: ':pyramid')
     
     kapt 'androidx.room:room-compiler:2.6.1'
     implementation 'com.github.alidili:FlowLayout:v1.5'
