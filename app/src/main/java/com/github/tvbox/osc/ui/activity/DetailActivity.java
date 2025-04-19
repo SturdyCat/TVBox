@@ -710,7 +710,7 @@ public class DetailActivity extends BaseActivity {
             e.printStackTrace();
         }
         return arrayList;
-    }  
+    }
 
     private void setTextShow(TextView view, String tag, String info) {
         if (info == null || info.trim().isEmpty()) {
@@ -1247,7 +1247,8 @@ public class DetailActivity extends BaseActivity {
                 seriesFlagFocus.requestFocus();
                 return;
             }
-        } else if (showPreview) {
+        } else if (showPreview && playFragment != null) {
+            playFragment.setPlayTitle(false);
             playFragment.mVideoView.release();
         }
         super.onBackPressed();

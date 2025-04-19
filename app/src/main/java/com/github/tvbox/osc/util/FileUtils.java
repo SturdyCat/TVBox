@@ -1,7 +1,10 @@
 package com.github.tvbox.osc.util;
 
+import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Base64;
+
+import com.github.catvod.utils.Path;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.server.ControlManager;
 import com.github.tvbox.osc.util.StringUtils;
@@ -23,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -104,7 +108,10 @@ public class FileUtils {
             os.close();
         }
     }
-
+    public static String getRootPath() {
+        return Environment.getExternalStorageDirectory()
+            .getAbsolutePath();
+    }
     public static void recursiveDelete(File file) {
         try {
             if (!file.exists())
@@ -343,5 +350,58 @@ public class FileUtils {
         int lastSlashIndex = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
         // 如果路径中有点号，并且点号在最后一个斜杠之后，认为有后缀
         return lastDotIndex > lastSlashIndex && lastDotIndex < path.length() - 1;
+    }
+
+    public static String read(String path) {
+        try {
+            return read(new FileInputStream(getLocal(path)));
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public static String read(InputStream is) {
+        try {
+            byte[] data = new byte[is.available()];
+            is.read(data);
+            is.close();
+            return new String(data, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+    public static File getLocal(String path) {
+        File file1 = new File(path.replace("file:/", ""));
+        File file2 = new File(path.replace("file:/", Environment.getExternalStorageDirectory().getAbsolutePath()));
+        return file2.exists() ? file2 : file1.exists() ? file1 : new File(path);
+    }
+    public static void deleteFile(File file) {
+        if (!file.exists()) return;
+        if (file.isFile()) {
+            if (file.canWrite()) file.delete();
+            return;
+        }
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files == null || files.length == 0) {
+                if (file.canWrite()) file.delete();
+                return;
+            }
+            for(File one : files) {
+                deleteFile(one);
+            }
+        }
+        return;
+    }
+
+    public static String getFilePath() {
+        return App.getInstance().getFilesDir().getAbsolutePath();
+    }
+
+    public static boolean isWeekAgo(File file) {
+        long oneWeekMillis = 15L * 24 * 60 * 60 * 1000;
+        long timeDiff = System.currentTimeMillis() - file.lastModified();
+        return timeDiff > oneWeekMillis;
     }
 }

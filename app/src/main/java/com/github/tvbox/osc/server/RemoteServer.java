@@ -15,7 +15,7 @@ import com.github.tvbox.osc.util.OkGoHelper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
+import com.github.tvbox.osc.util.Proxy;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.BufferedOutputStream;
@@ -57,7 +57,8 @@ public class RemoteServer extends NanoHTTPD {
     private DataReceiver mDataReceiver;
     private ArrayList < RequestProcess > getRequestList = new ArrayList < > ();
     private ArrayList < RequestProcess > postRequestList = new ArrayList < > ();
-
+    private static final String PATTERN_ETH_STR = "^eth\\d+$";
+    private static final Pattern ETH_PATTERN = Pattern.compile(PATTERN_ETH_STR);
     public static String m3u8Content;
 
     public RemoteServer(int port, Context context) {
@@ -94,6 +95,32 @@ public class RemoteServer extends NanoHTTPD {
         isStarted = false;
     }
 
+    private Response getProxy(Object[] rs){
+        try {
+            if (rs[0] instanceof NanoHTTPD.Response) return (NanoHTTPD.Response) rs[0];
+            int code = (int) rs[0];
+            String mime = (String) rs[1];
+            InputStream stream = rs[2] != null ? (InputStream) rs[2] : null;
+            Response response = NanoHTTPD.newChunkedResponse(
+                    Response.Status.lookup(code),
+                    mime,
+                    stream
+            );
+            // 添加头部信息
+            if (rs.length >= 4 && rs[3] instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, String> mapHeader = (Map<String, String>) rs[3];
+                if(!mapHeader.isEmpty()){
+                    for (String key : mapHeader.keySet()) {
+                        response.addHeader(key, mapHeader.get(key));
+                    }
+                }
+            }
+            return response;
+        } catch (Throwable th) {
+            return NanoHTTPD.newFixedLengthResponse(Response.Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "500");
+        }
+    }
     @Override
     public Response serve(IHTTPSession session) {
         EventBus.getDefault().post(new ServerEvent(ServerEvent.SERVER_CONNECTION));
@@ -114,27 +141,11 @@ public class RemoteServer extends NanoHTTPD {
                     params.put("request-headers", new Gson().toJson(session.getHeaders()));
                     if (params.containsKey("do")) {
                         Object[] rs = ApiConfig.get().proxyLocal(params);
-                        //if (rs[0] instanceof Response) {
-                        //    return (Response) rs[0];
-                        //}                        
-                        int code = (int) rs[0];
-                        String mime = (String) rs[1];
-                        InputStream stream = rs[2] != null ? (InputStream) rs[2] : null;
-                        Response response = NanoHTTPD.newChunkedResponse(
-                        NanoHTTPD.Response.Status.lookup(code),
-                        mime,
-                        stream);
-                        if (rs.length > 3) {
-                            try {
-                                HashMap < String, String > headers = (HashMap < String, String > ) rs[3];
-                                for (String key: headers.keySet()) {
-                                    response.addHeader(key, headers.get(key));
-                                }
-                            } catch (Throwable th) {
-                                th.printStackTrace();
-                            }
-                        }
-                        return response;                        
+                        return getProxy(rs);
+                    }
+                    if (params.containsKey("go")) {
+                        Object[] rs = Proxy.proxy(params);
+                        return getProxy(rs);
                     }
                 } else if (fileName.startsWith("/file/")) {
                     try {
@@ -300,7 +311,7 @@ public class RemoteServer extends NanoHTTPD {
                 while (enumerationNi.hasMoreElements()) {
                     NetworkInterface networkInterface = enumerationNi.nextElement();
                     String interfaceName = networkInterface.getDisplayName();
-                    if (interfaceName.equals("eth0") || interfaceName.equals("wlan0")) {
+                    if (ETH_PATTERN.matcher(interfaceName).matches() || interfaceName.equals("wlan0")) {
                         Enumeration < InetAddress > enumIpAddr = networkInterface.getInetAddresses();
                         while (enumIpAddr.hasMoreElements()) {
                             InetAddress inetAddress = enumIpAddr.nextElement();
@@ -342,7 +353,8 @@ public class RemoteServer extends NanoHTTPD {
             info.add("files", new JsonArray());
             return info.toString();
         }
-        Arrays.sort(list, new Comparator < File > () {@Override
+        Arrays.sort(list, new Comparator<File>() {
+            @Override
             public int compare(File o1, File o2) {
                 if (o1.isDirectory() && o2.isFile()) return -1;
                 return o1.isFile() && o2.isDirectory() ? 1 : o1.getName().compareTo(o2.getName());
