@@ -1406,6 +1406,8 @@ public class PlayActivity extends BaseActivity {
         String playTitleInfo = mVodInfo.name + " : " + vs.name;
         setTip("正在获取播放信息", true, false);
         mController.setTitle(playTitleInfo);
+        RemoteServer.vodName = mVodInfo.name;
+        RemoteServer.artist = vs.name;
 
         stopParse();
         initParseLoadFound();
@@ -1436,9 +1438,14 @@ public class PlayActivity extends BaseActivity {
             playUrl(vs.url.replace("tvbox-drive://", ""), headers);
             return;
         }
-        if (vs.url.startsWith("tvbox-xg:") && !TextUtils.isEmpty(vs.url.substring(9))) {
-            this.mController.showParse(false);
-            playUrl(Jianpian.JPUrlDec(vs.url.substring(9)), null);
+        if(Jianpian.isJpUrl(vs.url)){//荐片地址特殊判断
+            String jp_url= vs.url;
+            mController.showParse(false);
+            if(vs.url.startsWith("tvbox-xg:")){
+                playUrl(Jianpian.JPUrlDec(jp_url.substring(9)), null);
+            }else {
+                playUrl(Jianpian.JPUrlDec(jp_url), null);
+            }
             return;
         }
         if (Thunder.play(vs.url, new Thunder.ThunderCallback() {
@@ -2085,24 +2092,9 @@ public class PlayActivity extends BaseActivity {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view,url);
-            String click=sourceBean.getClickSelector().trim();
             LOG.i("echo-onPageFinished url:" + url);
-            if(!click.isEmpty()){
-                String selector;
-                if(click.contains(";") && !click.endsWith(";")){
-                    if(!url.contains(click.split(";")[0]))return;
-                    selector=click.split(";")[1];
-                }else {
-                    selector=click;
-                }
-                String js = selector;
-                if(!selector.contains("click()"))js+=".click();";
-                LOG.i("echo-javascript:" + js);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    view.evaluateJavascript(js, null);
-                } else {
-                    view.loadUrl("javascript:" + js);
-                }
+            if(!url.equals("about:blank")){
+                mController.evaluateScript(sourceBean,url,view,null);
             }
             mHandler.sendEmptyMessage(200);
         }
@@ -2268,6 +2260,10 @@ public class PlayActivity extends BaseActivity {
         @Override
         public void onLoadFinished(XWalkView view, String url) {
             super.onLoadFinished(view, url);
+            LOG.i("echo-onPageFinished url:" + url);
+            if(!url.equals("about:blank")){
+                mController.evaluateScript(sourceBean,url,null,view);
+            }
         }
 
         @Override
